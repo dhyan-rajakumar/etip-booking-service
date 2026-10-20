@@ -1,27 +1,23 @@
 package com.etip.booking.controller;
 
-import com.etip.booking.dto.BookingEvent;
 import com.etip.booking.dto.BookingRequest;
 import com.etip.booking.dto.BookingResponse;
-import com.etip.booking.service.BookingEventProducer;
 import com.etip.booking.service.BookingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.web.bind.annotation.*;
 
-@EnableKafka
+
 @RestController
 @RequestMapping("/bookings")
 public class BookingController {
 
     private final BookingService bookingService;
-    private final BookingEventProducer bookingEventProducer;
 
-    public BookingController(BookingService bookingService, BookingEventProducer bookingEventProducer) {
+
+    public BookingController(BookingService bookingService) {
         this.bookingService = bookingService;
-        this.bookingEventProducer = bookingEventProducer;
     }
 
 
@@ -44,12 +40,6 @@ public class BookingController {
         return ResponseEntity.ok(booking);
     }
 
-    @PutMapping("/transaction-test/{bookingId}")
-    public ResponseEntity<Void> transactionTest(@PathVariable String bookingId){
-        bookingService.MethodA(bookingId);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/{bookingId}")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable String bookingId){
         BookingResponse booking = bookingService.getBookingById(bookingId);
@@ -62,16 +52,4 @@ public class BookingController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/test-kafka-publish")
-    public ResponseEntity testKafka(){
-
-        BookingEvent bookingEvent = new BookingEvent();
-        bookingEvent.setBookingId("Book-0001");
-        bookingEvent.setCustomerName("Dhyaneswaran");
-        bookingEvent.setSource("India");
-        bookingEvent.setEventName("Booking-Created");
-        bookingEvent.setDestination("Austria");
-        bookingEventProducer.publishBookingCreated(bookingEvent);
-        return ResponseEntity.ok("Kafka event posted successfully!");
-    }
 }
